@@ -28,6 +28,7 @@ sources = Split("""
   test_logging.c
   test_tls_io.c
   test_tok.c
+  test_certs.c
 """)
 
 

@@ -17,49 +17,15 @@
 
 #include "selene.h"
 #include "sln_tests.h"
-#include <stdio.h>
 
-static void*
-malloc_cb(void *baton, size_t len) {
-  return malloc(len);
+static void cert_chain_add(void **state)
+{
+  selene_conf_t *conf = NULL;
+  SLN_ERR(selene_conf_create(&conf));
+  SLN_ASSERT_CONF(conf);
+  selene_conf_destroy(conf);
 }
 
-static void*
-calloc_cb(void *baton, size_t len) {
-  return calloc(1, len);
-}
-
-static void
-free_cb(void *baton, void *ptr) {
-  free(ptr);
-}
-
-static selene_alloc_t test_alloc = {
-  NULL,
-  malloc_cb,
-  calloc_cb,
-  free_cb
-};
-
-selene_alloc_t* sln_test_alloc = &test_alloc;
-
-#define RUNT(module) do { \
-    int rv = sln_tests_ ## module (); \
-    if (rv != 0) { \
-      return rv; \
-    } \
-  } while (0);
-
-int main(int argc, char* argv[]) {
-  RUNT(logging);
-  RUNT(init);
-  RUNT(brigade);
-  RUNT(buckets);
-  RUNT(events);
-  RUNT(tok);
-  RUNT(tls_io);
-  RUNT(handshake_io);
-  RUNT(alert_io);
-  RUNT(certs);
-  return 0;
-}
+SLN_TESTS_START(certs)
+  SLN_TESTS_ENTRY(cert_chain_add)
+SLN_TESTS_END()
