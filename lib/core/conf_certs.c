@@ -21,17 +21,10 @@
 #include "selene_trusted_ca_certificates.h"
 #include <string.h>
 
-/* All Certificate related configuration APIs */
-selene_error_t*
-selene_conf_cert_chain_add(selene_conf_t *conf, const char *certificate, const char *pkey)
+static selene_error_t*
+parse_x509_cert(const char *certificate, X509 **x509)
 {
-  return SELENE_SUCCESS;
-}
-
-selene_error_t*
-selene_conf_ca_trusted_cert_add(selene_conf_t *conf, const char *certificate)
-{
-  /* TOOD: replace with native x509 :( )*/
+  /* TODO: replace with native x509 :( )*/
   BIO *bio = BIO_new(BIO_s_mem());
 
   int r = BIO_write(bio, certificate, strlen(certificate));
@@ -40,16 +33,40 @@ selene_conf_ca_trusted_cert_add(selene_conf_t *conf, const char *certificate)
     return selene_error_createf(SELENE_ENOMEM, "Attempting to parse CA certificate, BIO_write returned: %d", r);
   }
 
-  X509* x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
-  if (!x509) {
+  *x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
+  if (!*x509) {
     BIO_free(bio);
     /* TODO: better error messages */
     return selene_error_create(SELENE_ENOMEM, "Attempting to parse CA certificate, PEM_read_bio_X509 failed.");
   }
 
   BIO_free(bio);
-
-  X509_STORE_add_cert(conf->trusted_cert_store, x509);
-
   return SELENE_SUCCESS;
+}
+
+/* All Certificate related configuration APIs */
+selene_error_t*
+selene_conf_cert_chain_add(selene_conf_t *conf, const char *certificate, const char *pkey)
+{
+  selene_error_t* err;
+  X509* x509;
+
+  if ((err = parse_x509_cert(certificate, &x509)) == SELENE_SUCCESS) {
+    X509_STORE_add_cert(conf->cert_chain, x509);
+  }
+
+  return err;
+}
+
+selene_error_t*
+selene_conf_ca_trusted_cert_add(selene_conf_t *conf, const char *certificate)
+{
+  selene_error_t* err;
+  X509* x509;
+
+  if ((err = parse_x509_cert(certificate, &x509)) == SELENE_SUCCESS) {
+    X509_STORE_add_cert(conf->trusted_cert_store, x509);
+  }
+
+  return err;
 }

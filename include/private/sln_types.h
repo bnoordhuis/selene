@@ -130,6 +130,7 @@ struct selene_conf_t {
   int protocols;
   selene_cipher_suite_list_t ciphers;
   X509_STORE* trusted_cert_store;
+  X509_STORE* cert_chain;
 };
 
 typedef struct {

@@ -56,6 +56,8 @@ selene_conf_create_with_allloc(selene_conf_t **p_conf, selene_alloc_t *alloc)
 
   conf->trusted_cert_store = X509_STORE_new();
 
+  conf->cert_chain = X509_STORE_new();
+
   *p_conf = conf;
 
 
